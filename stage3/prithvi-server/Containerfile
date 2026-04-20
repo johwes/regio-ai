@@ -1,0 +1,28 @@
+# Prithvi-EO-2.0 KServe predictor
+# Base: PyTorch + CUDA — matches the OpenShift AI PyTorch notebook environment
+FROM pytorch/pytorch:2.3.1-cuda12.1-cudnn8-runtime
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        git curl \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY predictor.py .
+
+ENV MODEL_ID=ibm-nasa-geospatial/Prithvi-EO-2.0-300M-TL-Sen1Floods11
+ENV HF_HOME=/mnt/models/hf-cache
+ENV PORT=8080
+
+EXPOSE 8080
+
+# Non-root UID 1001 — required for OpenShift's restricted SCC
+RUN useradd -u 1001 -r -g 0 -d /app -s /sbin/nologin appuser \
+    && chown -R 1001:0 /app \
+    && chmod -R g=u /app
+USER 1001
+
+CMD ["python", "predictor.py"]

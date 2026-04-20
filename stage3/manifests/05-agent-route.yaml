@@ -1,0 +1,17 @@
+# OpenShift Route — exposes the Gradio UI publicly over HTTPS.
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: regio-agent
+  namespace: jwesterl
+  labels:
+    app: regio-agent
+spec:
+  to:
+    kind: Service
+    name: regio-agent
+  port:
+    targetPort: 7860
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect

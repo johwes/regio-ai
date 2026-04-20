@@ -1,0 +1,54 @@
+# Custom KServe ServingRuntime for the Prithvi-EO-2.0 TerraTorch predictor.
+# Defines the container template; the InferenceService references this runtime
+# by the 'prithvi-water' model format.
+apiVersion: serving.kserve.io/v1alpha1
+kind: ServingRuntime
+metadata:
+  name: prithvi-terratorch
+  namespace: jwesterl
+spec:
+  supportedModelFormats:
+    - name: prithvi-water
+      version: "1"
+      autoSelect: true
+  protocolVersions:
+    - v2
+  containers:
+    - name: kserve-container
+      image: quay.io/jwesterl/prithvi-server:latest
+      imagePullPolicy: Always
+      ports:
+        - containerPort: 8080
+          protocol: TCP
+      env:
+        - name: MODEL_ID
+          value: ibm-nasa-geospatial/Prithvi-EO-2.0-300M-TL-Sen1Floods11
+        - name: HF_HOME
+          value: /mnt/models/hf-cache
+      volumeMounts:
+        - name: model-cache
+          mountPath: /mnt/models
+      # Model download takes ~2 min on first start — readiness probe waits accordingly
+      readinessProbe:
+        httpGet:
+          path: /v2/health/ready
+          port: 8080
+        initialDelaySeconds: 30
+        periodSeconds: 15
+        failureThreshold: 40   # up to 10 min total wait
+      livenessProbe:
+        httpGet:
+          path: /v2/health/live
+          port: 8080
+        initialDelaySeconds: 60
+        periodSeconds: 30
+        failureThreshold: 5
+      resources:
+        requests:
+          cpu: "2"
+          memory: 8Gi
+          nvidia.com/gpu: "1"
+        limits:
+          cpu: "4"
+          memory: 16Gi
+          nvidia.com/gpu: "1"
