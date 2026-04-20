@@ -1,7 +1,7 @@
 # KServe InferenceService for Prithvi-EO-2.0-300M water detection.
-# Uses RawDeployment mode (plain Kubernetes Deployment — no Knative complexity).
-# References the 'prithvi-terratorch' ServingRuntime via modelFormat.
-# The model-cache PVC is mounted to persist HuggingFace weights across restarts.
+# Uses RawDeployment mode with a direct container spec — bypasses ServingRuntime
+# format matching which requires a storageUri. The predictor container handles
+# its own model download from HuggingFace Hub at startup.
 apiVersion: serving.kserve.io/v1beta1
 kind: InferenceService
 metadata:
@@ -11,15 +11,48 @@ metadata:
     serving.kserve.io/deploymentMode: RawDeployment
 spec:
   predictor:
-    model:
-      modelFormat:
-        name: prithvi-water
-        version: "1"
+    containers:
+      - name: kserve-container
+        image: quay.io/jwesterl/prithvi-server:latest
+        imagePullPolicy: Always
+        ports:
+          - containerPort: 8080
+            protocol: TCP
+        env:
+          - name: MODEL_ID
+            value: ibm-nasa-geospatial/Prithvi-EO-2.0-300M-TL-Sen1Floods11
+          - name: HF_HOME
+            value: /mnt/models/hf-cache
+        volumeMounts:
+          - name: model-cache
+            mountPath: /mnt/models
+        readinessProbe:
+          httpGet:
+            path: /v2/health/ready
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 15
+          failureThreshold: 40
+        livenessProbe:
+          httpGet:
+            path: /v2/health/live
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          failureThreshold: 5
+        resources:
+          requests:
+            cpu: "2"
+            memory: 8Gi
+            nvidia.com/gpu: "1"
+          limits:
+            cpu: "4"
+            memory: 16Gi
+            nvidia.com/gpu: "1"
     volumes:
       - name: model-cache
         persistentVolumeClaim:
           claimName: prithvi-model-cache
-    # Tolerate GPU node taints if present
     tolerations:
       - key: nvidia.com/gpu
         operator: Exists

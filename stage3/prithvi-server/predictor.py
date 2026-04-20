@@ -19,6 +19,15 @@ import uvicorn
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger(__name__)
 
+# torchgeo <0.6 is missing SENTINEL2_ALL_SOFTCON — monkeypatch before terratorch imports
+try:
+    from torchgeo.models.resnet import ResNet50_Weights as _R50W
+    if not hasattr(_R50W, "SENTINEL2_ALL_SOFTCON"):
+        _R50W.SENTINEL2_ALL_SOFTCON = _R50W.SENTINEL2_ALL_MOCO
+        log.info("Monkeypatched ResNet50_Weights.SENTINEL2_ALL_SOFTCON → SENTINEL2_ALL_MOCO")
+except Exception as _e:
+    log.warning("Could not monkeypatch torchgeo ResNet50_Weights: %s", _e)
+
 MODEL_ID   = os.environ.get("MODEL_ID", "ibm-nasa-geospatial/Prithvi-EO-2.0-300M-TL-Sen1Floods11")
 HF_HOME    = os.environ.get("HF_HOME",  "/mnt/models/hf-cache")
 MODEL_NAME = "prithvi-water"
