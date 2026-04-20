@@ -1,0 +1,70 @@
+# Regio-AI agent application — Deployment + Service
+# Runs the Gradio UI and LangChain agent loop.
+# Calls the Prithvi KServe endpoint and LiteLLM MaaS internally.
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: regio-agent
+  namespace: jwesterl
+  labels:
+    app: regio-agent
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: regio-agent
+  template:
+    metadata:
+      labels:
+        app: regio-agent
+    spec:
+      containers:
+        - name: regio-agent
+          image: quay.io/jwesterl/regio-agent:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 7860
+              protocol: TCP
+          env:
+            - name: LITELLM_ENDPOINT
+              value: https://litellm-prod.apps.maas.redhatworkshops.io/v1
+            - name: LLM_MODEL
+              value: qwen3-14b
+            - name: PRITHVI_URL
+              value: http://prithvi-water-predictor.jwesterl.svc.cluster.local:8080/v2/models/prithvi-water/infer
+            - name: PORT
+              value: "7860"
+            - name: LITELLM_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: regio-ai-secrets
+                  key: LITELLM_API_KEY
+          resources:
+            requests:
+              cpu: "500m"
+              memory: 2Gi
+            limits:
+              cpu: "2"
+              memory: 4Gi
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 7860
+            initialDelaySeconds: 20
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: regio-agent
+  namespace: jwesterl
+  labels:
+    app: regio-agent
+spec:
+  selector:
+    app: regio-agent
+  ports:
+    - port: 7860
+      targetPort: 7860
+      protocol: TCP

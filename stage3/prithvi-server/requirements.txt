@@ -1,0 +1,6 @@
+terratorch
+timm
+einops
+huggingface-hub
+fastapi
+uvicorn[standard]

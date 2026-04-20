@@ -1,0 +1,15 @@
+gradio>=4.0
+langchain>=0.2
+langchain-openai>=0.1
+openai>=1.0
+planetary-computer
+pystac-client
+stackstac
+rasterio
+geopandas
+shapely
+folium
+pyproj
+numpy
+requests
+affine

@@ -1,0 +1,26 @@
+# KServe InferenceService for Prithvi-EO-2.0-300M water detection.
+# Uses RawDeployment mode (plain Kubernetes Deployment — no Knative complexity).
+# References the 'prithvi-terratorch' ServingRuntime via modelFormat.
+# The model-cache PVC is mounted to persist HuggingFace weights across restarts.
+apiVersion: serving.kserve.io/v1beta1
+kind: InferenceService
+metadata:
+  name: prithvi-water
+  namespace: jwesterl
+  annotations:
+    serving.kserve.io/deploymentMode: RawDeployment
+spec:
+  predictor:
+    model:
+      modelFormat:
+        name: prithvi-water
+        version: "1"
+    volumes:
+      - name: model-cache
+        persistentVolumeClaim:
+          claimName: prithvi-model-cache
+    # Tolerate GPU node taints if present
+    tolerations:
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: NoSchedule

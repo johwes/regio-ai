@@ -1,0 +1,14 @@
+# PVC for caching Prithvi model weights (~1.2 GB from HuggingFace Hub).
+# Prevents repeated downloads across pod restarts.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: prithvi-model-cache
+  namespace: jwesterl
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: ocs-storagecluster-ceph-rbd
