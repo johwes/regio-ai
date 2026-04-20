@@ -6,7 +6,7 @@
 
 ## Context
 
-Regio-AI is a demo pipeline that uses satellite imagery and AI models to flag potential *strandskydd* (Swedish shoreline protection law) violations. If a system of this type were adopted by a county authority (*länsstyrelsen*) in an administrative oversight or enforcement workflow, the EU AI Act would likely apply.
+Regio-AI is a demo pipeline that uses satellite imagery and AI models to flag potential *strandskydd* (Swedish shoreline protection law) violations. If a system of this type were adopted by a county authority in an administrative oversight or enforcement workflow, the EU AI Act would likely apply.
 
 ---
 
