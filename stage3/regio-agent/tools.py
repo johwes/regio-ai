@@ -222,7 +222,15 @@ def compute_ndbi_change() -> str:
     new_buildup = (ndbi_change > NDBI_THRESHOLD) & np.isfinite(ndbi_change)
     strandskydd_mask = session.get("strandskydd_mask",
                                    np.zeros((PATCH_SIZE, PATCH_SIZE), dtype=bool))
-    violation_mask = new_buildup & strandskydd_mask
+
+    # Exclude pixels that Prithvi classified as water in either scene.
+    # Water NDBI fluctuates heavily between dates (tides, sun angle, turbidity),
+    # producing large false-positive deltas that mimic construction signals.
+    water_before = session.get("water_before", np.zeros((PATCH_SIZE, PATCH_SIZE), dtype=bool))
+    water_after  = session.get("water_after",  np.zeros((PATCH_SIZE, PATCH_SIZE), dtype=bool))
+    ever_water   = water_before | water_after
+
+    violation_mask = new_buildup & strandskydd_mask & ~ever_water
 
     session.update({
         "ndbi_after": ndbi_aft, "ndbi_before": ndbi_bef,
