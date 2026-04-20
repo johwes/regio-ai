@@ -183,7 +183,11 @@ def respond(message, history, session_state):
         yield history, PLACEHOLDER_MAP, session_state
         return
 
-    history = history + [[message, THINKING]]
+    # Gradio 6 Chatbot uses messages format (dicts) by default
+    history = history + [
+        {"role": "user",      "content": message},
+        {"role": "assistant", "content": THINKING},
+    ]
     yield history, PLACEHOLDER_MAP, session_state
 
     try:
@@ -191,7 +195,7 @@ def respond(message, history, session_state):
     except Exception as exc:
         answer = f"Error during analysis: {exc}"
 
-    history[-1][1] = answer
+    history[-1]["content"] = answer
     map_html = session_state.get("map_html", PLACEHOLDER_MAP)
     yield history, map_html, session_state
 
