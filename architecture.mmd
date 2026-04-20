@@ -1,0 +1,19 @@
+graph TD
+    User([User]) -->|natural language query| Gradio[Gradio Chat UI]
+
+    Gradio <-->|messages| Agent
+
+    subgraph Agent["Agent Loop"]
+        Loop[Tool-calling loop] <-->|reasoning &\ntool selection| LLM[LLM]
+    end
+
+    Loop -->|1| T1[search_and_fetch_scenes]
+    Loop -->|2| T2[run_prithvi_water_detection]
+    Loop -->|3| T3[compute_ndbi_change]
+    Loop -->|4| T4[generate_violation_map]
+
+    T1 -->|Sentinel-2 imagery| PC[(Planetary Computer)]
+    T2 -->|inference request| KServe[KServe — Prithvi-EO-2.0-300M]
+
+    T4 -->|violation map + summary| Gradio
+    Gradio -->|map & answer| User
