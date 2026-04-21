@@ -1,0 +1,40 @@
+graph TD
+
+    subgraph Pipeline["① Ingestion Pipeline — Kubeflow Pipelines"]
+        direction LR
+        PDF["EU AI Act PDF\n& Policy Documents"]
+        GitSrc["Project Git Repository\ncode · README · manifests"]
+
+        PDF --> Docling["Docling\nPDF → structured text"]
+        GitSrc --> GitEx["Code & Doc\nExtractor"]
+
+        Docling --> Chunk["Chunk &\nSplit"]
+        GitEx --> Chunk
+
+        Chunk --> Embed["Embedding Model\n(KServe)"]
+        Embed --> VS[("Vector Store\nMilvus")]
+    end
+
+    subgraph Agent["② Compliance Review Agent"]
+        direction TB
+        User(["User"]) -->|"project URL + review request"| UI["Gradio UI"]
+
+        UI --> AgentSDK["Agent SDK\nLangChain · CrewAI"]
+
+        AgentSDK <-->|"reasoning"| LLM["LLM"]
+        AgentSDK -->|"read project\ncode & docs"| GitTool["Git Repo\nReader Tool"]
+
+        subgraph LlamaStack["LLama Stack"]
+            MemoryAPI["Memory API\nRAG retrieval"]
+            Safety["Safety Shields\nguardrails · output filtering"]
+        end
+
+        AgentSDK --> LlamaStack
+        MemoryAPI -->|"retrieve relevant\nAI Act articles"| VS
+
+        AgentSDK --> Report["Compliance Report\nArticle · Status · Recommendation"]
+        Report --> UI
+        UI --> User
+    end
+
+    Pipeline --> Agent
