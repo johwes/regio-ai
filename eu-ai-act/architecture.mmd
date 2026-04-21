@@ -19,14 +19,20 @@ graph TD
         direction TB
         User(["User"]) -->|"project URL + review request"| UI["Gradio UI"]
 
-        UI --> Loop["Agent Loop"]
-        Loop <-->|"reasoning &\ntool selection"| LLM["LLM\n(MaaS — shared)"]
+        UI --> LlamaStack
 
-        Loop -->|"1. retrieve relevant\nAI Act articles"| VS
-        Loop -->|"2. read project\ncode & docs"| GitTool["Git Repo\nReader Tool"]
-        Loop -->|"3. cross-reference\n& assess"| Assess["Gap Analysis\nEngine"]
+        subgraph LlamaStack["LLama Stack"]
+            direction TB
+            AgentsAPI["Agents API\ntool calling · multi-step reasoning"]
+            MemoryAPI["Memory API\nRAG retrieval"]
+            Safety["Safety Shields\nguardrails · output filtering"]
+        end
 
-        Assess --> Report["Compliance Report\nArticle · Status · Recommendation"]
+        AgentsAPI <-->|"reasoning"| LLM["LLM"]
+        MemoryAPI -->|"retrieve relevant\nAI Act articles"| VS
+        AgentsAPI -->|"read project\ncode & docs"| GitTool["Git Repo\nReader Tool"]
+
+        LlamaStack --> Report["Compliance Report\nArticle · Status · Recommendation"]
         Report --> UI
         UI --> User
     end
