@@ -44,16 +44,10 @@ spec:
           requests:
             cpu: "2"
             memory: 8Gi
-            nvidia.com/gpu: "1"
           limits:
             cpu: "4"
             memory: 16Gi
-            nvidia.com/gpu: "1"
     volumes:
       - name: model-cache
         persistentVolumeClaim:
           claimName: prithvi-model-cache
-    tolerations:
-      - key: nvidia.com/gpu
-        operator: Exists
-        effect: NoSchedule
