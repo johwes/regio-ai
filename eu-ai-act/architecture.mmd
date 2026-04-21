@@ -1,0 +1,34 @@
+graph TD
+
+    subgraph Pipeline["① Ingestion Pipeline — Kubeflow Pipelines"]
+        direction LR
+        PDF["EU AI Act PDF\n& Policy Documents"]
+        GitSrc["Project Git Repository\ncode · README · manifests"]
+
+        PDF --> Docling["Docling\nPDF → structured text"]
+        GitSrc --> GitEx["Code & Doc\nExtractor"]
+
+        Docling --> Chunk["Chunk &\nSplit"]
+        GitEx --> Chunk
+
+        Chunk --> Embed["Embedding Model\n(KServe)"]
+        Embed --> VS[("Vector Store\nMilvus")]
+    end
+
+    subgraph Agent["② Compliance Review Agent"]
+        direction TB
+        User(["User"]) -->|"project URL + review request"| UI["Gradio UI"]
+
+        UI --> Loop["Agent Loop"]
+        Loop <-->|"reasoning &\ntool selection"| LLM["LLM\n(MaaS — shared)"]
+
+        Loop -->|"1. retrieve relevant\nAI Act articles"| VS
+        Loop -->|"2. read project\ncode & docs"| GitTool["Git Repo\nReader Tool"]
+        Loop -->|"3. cross-reference\n& assess"| Assess["Gap Analysis\nEngine"]
+
+        Assess --> Report["Compliance Report\nArticle · Status · Recommendation"]
+        Report --> UI
+        UI --> User
+    end
+
+    Pipeline --> Agent
