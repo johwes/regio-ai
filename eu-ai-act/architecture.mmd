@@ -19,20 +19,20 @@ graph TD
         direction TB
         User(["User"]) -->|"project URL + review request"| UI["Gradio UI"]
 
-        UI --> LlamaStack
+        UI --> AgentSDK["Agent SDK\nLangChain · CrewAI"]
+
+        AgentSDK <-->|"reasoning"| LLM["LLM"]
+        AgentSDK -->|"read project\ncode & docs"| GitTool["Git Repo\nReader Tool"]
 
         subgraph LlamaStack["LLama Stack"]
-            direction TB
-            AgentsAPI["Agents API\ntool calling · multi-step reasoning"]
             MemoryAPI["Memory API\nRAG retrieval"]
             Safety["Safety Shields\nguardrails · output filtering"]
         end
 
-        AgentsAPI <-->|"reasoning"| LLM["LLM"]
+        AgentSDK --> LlamaStack
         MemoryAPI -->|"retrieve relevant\nAI Act articles"| VS
-        AgentsAPI -->|"read project\ncode & docs"| GitTool["Git Repo\nReader Tool"]
 
-        LlamaStack --> Report["Compliance Report\nArticle · Status · Recommendation"]
+        AgentSDK --> Report["Compliance Report\nArticle · Status · Recommendation"]
         Report --> UI
         UI --> User
     end
