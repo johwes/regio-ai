@@ -10,7 +10,7 @@ Built on Red Hat OpenShift AI. Models served via KServe. LLM via LiteLLM Model-a
 
 ## What is strandskydd?
 
-Swedish law (MB 7 kap. 15 §) prohibits construction within 100 metres of any water body — sea, lakes, rivers, and streams. The protected zone is derived from the waterline and enforced by county authorities (*länsstyrelsen*).
+Swedish law (MB 7 kap. 15 §) prohibits construction within 100 metres of any water body — sea, lakes, rivers, and streams. The protected zone is derived from the waterline and enforced by county authorities.
 
 ---
 
